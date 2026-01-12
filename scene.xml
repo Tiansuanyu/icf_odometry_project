@@ -1,0 +1,15 @@
+<mujoco model="swerve_scene">
+    <option timestep="0.001" integrator="RK4" gravity="0 0 -9.81"/>
+
+    <asset>
+        <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="512" height="512"/>
+        <material name="grid" texture="grid" texrepeat="2 2" texuniform="true"/>
+    </asset>
+
+    <include file="chassis.xml"/>
+
+    <worldbody>
+        <light pos="0 0 5" dir="0 0 -1" diffuse="1 1 1"/>
+        <geom name="floor" size="10 10 0.05" type="plane" material="grid" friction="1 0.005 0.0001"/>
+    </worldbody>
+</mujoco>
