@@ -6,14 +6,12 @@ import time
 # --- 配置 ---
 XML_PATH = "scene.xml" 
 
-# 速度与控制参数
 MAX_SPEED = 50.0       
 ROTATION_SPEED = 3.0   
-RAIL_MIN = 0.0
+RAIL_MIN = 0.00
 RAIL_MAX = 0.25        
-RAIL_STEP = 0.02       # 每次按键调整高度的步长
 
-# Offset
+# Offset (安装角度偏移)
 OFFSETS = {
     'front_left':   -np.pi/4, 
     'front_right':  +np.pi/4,
@@ -21,7 +19,6 @@ OFFSETS = {
     'rear_right':   +3*np.pi/4
 }
 
-# 映射关系
 WHEEL_MAP_CONFIG = {
     'front_left':   'RR', 
     'front_right':  'LR',  
@@ -29,7 +26,6 @@ WHEEL_MAP_CONFIG = {
     'rear_right':   'LF',  
 }
 
-# 几何坐标 (X=右, Y=前)
 WHEEL_GEOMETRY = {
     'front_left':   (-1.0,  1.0), 
     'front_right':  ( 1.0,  1.0), 
@@ -43,30 +39,49 @@ class ChassisController:
         self.data = data
         
         self.actuators = {}
-        # 查找所有电机
-        for name in ['LF', 'RF', 'LR', 'RR']:
-            self.actuators[f"{name}_steer"] = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"{name}_steer")
-            self.actuators[f"{name}_drive"] = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"{name}_drive")
-            
-            # 悬挂电机检查
-            rail_name = f"{name}_rail"
-            rail_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, rail_name)
-            if rail_id != -1:
-                self.actuators[rail_name] = rail_id
-            else:
-                print(f"[严重警告] XML中没找到 {rail_name}！按升降键将无效。请检查XML actuator部分。")
-
         self.wheels = {}
+        
+        # 初始化查找 ID 和 Address
+        for name in ['LF', 'RF', 'LR', 'RR']:
+            steer_act_name = f"{name}_steer"
+            drive_act_name = f"{name}_drive"
+            rail_act_name  = f"{name}_rail"
+            
+            # 1. 查找 Actuator ID (用于写控制量)
+            steer_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, steer_act_name)
+            drive_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, drive_act_name)
+            rail_id  = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, rail_act_name)
+
+            # 2. 查找 Joint Address (用于读真实角度)
+            # 警告：这里假设你的 Joint 名字和 Actuator 名字一样。如果不动，请检查 XML joint name
+            joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, steer_act_name)
+            if joint_id != -1:
+                qpos_adr = model.jnt_qposadr[joint_id]
+            else:
+                # 尝试加 "_joint" 后缀再次查找 (常见的 XML 命名习惯)
+                joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, f"{name}_steer_joint")
+                qpos_adr = model.jnt_qposadr[joint_id] if joint_id != -1 else None
+            
+            if qpos_adr is None:
+                print(f"[严重警告] 找不到 {name} 的转向关节，无法读取角度，优化逻辑将失效！")
+
+            self.actuators[f"{name}_data"] = {
+                'steer_id': steer_id,
+                'drive_id': drive_id,
+                'rail_id': rail_id,
+                'qpos_adr': qpos_adr
+            }
+
+        # 组装逻辑轮子
         for logic_name, xml_prefix in WHEEL_MAP_CONFIG.items():
-            wheel_data = {
-                'steer_id': self.actuators[f"{xml_prefix}_steer"],
-                'drive_id': self.actuators[f"{xml_prefix}_drive"],
+            comp_data = self.actuators[f"{xml_prefix}_data"]
+            self.wheels[logic_name] = {
+                'steer_id': comp_data['steer_id'],
+                'drive_id': comp_data['drive_id'],
+                'rail_id':  comp_data['rail_id'],
+                'qpos_adr': comp_data['qpos_adr'],
                 'pos': WHEEL_GEOMETRY[logic_name]
             }
-            if f"{xml_prefix}_rail" in self.actuators:
-                wheel_data['rail_id'] = self.actuators[f"{xml_prefix}_rail"]
-            
-            self.wheels[logic_name] = wheel_data
 
         self.vx = 0.0 
         self.vy = 0.0 
@@ -74,81 +89,124 @@ class ChassisController:
         self.rail_height = 0.0
 
     def key_callback(self, keycode):
-        # --- 按键侦测器 ---
-        # 如果你按键没反应，看控制台打印的数字，把那个数字填到下面的 if 里
-        print(f"Debug: Key Pressed Code = {keycode}") 
-
+        # --- 核心修复：每次按键前，先强制清除上一次的速度状态 ---
         self.vx = 0.0
         self.vy = 0.0
         self.w = 0.0
         
-        # 移动 (上下左右)
-        if keycode == 265:   # Up
+        # --- 移动控制 ---
+        if keycode == 265:   # Up (箭头向上)
             self.vy = 1.0
-        elif keycode == 264: # Down
+        elif keycode == 264: # Down (箭头向下)
             self.vy = -1.0
-        elif keycode == 263: # Left
+        elif keycode == 263: # Left (箭头向左)
             self.vx = -1.0
-        elif keycode == 262: # Right
+        elif keycode == 262: # Right (箭头向右)
             self.vx = 1.0
         
-        # 旋转
-        elif keycode == 81:  # Q
+        # --- 旋转控制 ---
+        elif keycode == 81:  # Q (左旋)
             self.w = -1.0  
-        elif keycode == 69:  # E
+        elif keycode == 69:  # E (右旋)
             self.w = 1.0   
 
-        # --- 悬挂控制 (使用中括号) ---
-        # [ 键 (通常是 91) -> 降低
-        # ] 键 (通常是 93) -> 升高
-        elif keycode == 93: # ] 键
-            self.rail_height = RAIL_MAX # 直接设为 0.25
+        # --- 悬挂/其他功能 ---
+        elif keycode == 32: # Space (急停/刹车)
+            # 因为前面已经归零了，这里其实什么都不用做，
+            # 或者你可以专门留着作为逻辑占位
+            pass 
             
-        elif keycode == 91: # [ 键
-            self.rail_height = RAIL_MIN # 直接设为 0.0
+        elif keycode == 93: # ]
+            self.rail_height = RAIL_MAX 
+        elif keycode == 91: # [
+            self.rail_height = RAIL_MIN 
         
-        # 限制范围
         self.rail_height = np.clip(self.rail_height, RAIL_MIN, RAIL_MAX)
 
-        # 打印当前状态
-        # print(f"Status -> Height: {self.rail_height:.2f}")
+    def optimize_module(self, current_angle, target_angle, target_speed):
+        """
+        学术/工程标准 Swerve 优化函数
+        输入: 当前弧度, 目标弧度, 目标速度
+        输出: 优化后的目标弧度, 优化后的速度
+        """
+        
+        # 1. 计算误差，并归一化到 [-pi, pi]
+        error = target_angle - current_angle
+        error = np.arctan2(np.sin(error), np.cos(error)) # 最稳健的归一化写法
+
+        # 2. 策略A：最短路径 (Vector Inversion)
+        # 如果误差绝对值 > 90度，说明反着开更近
+        if abs(error) > (np.pi / 2):
+            target_angle = target_angle + np.pi
+            target_speed = -target_speed
+            # 重新计算误差供策略B使用
+            error = target_angle - current_angle
+            error = np.arctan2(np.sin(error), np.cos(error))
+
+        # 3. 策略B：余弦缩放 (Cosine Scaling)
+        # 误差越大，速度越慢；误差90度时速度为0。
+        # 这样既保证了不拖拽，又保证了只要有趋势就会动，不会死锁。
+        # 我们用 abs(cos) 是因为前面已经处理了反向问题，这里的 cos 符号主要表示“对齐程度”
+        # 实际上因为 abs(error) < 90度，cos(error) 恒为正。
+        
+        scale_factor = np.cos(error)
+        
+        # 如果你希望容忍度高一点，不想让速度降得太厉害，可以用 power 调整，例如：
+        # scale_factor = np.sign(np.cos(error)) * (abs(np.cos(error)) ** 0.5)
+        
+        # 只有当 scale_factor 非常小时才强制为0，防止电流噪声
+        if scale_factor < 0.1: 
+            scale_factor = 0.0
+
+        final_speed = target_speed * scale_factor
+        
+        # 再次归一化目标角度输出，防止数值溢出
+        final_angle = np.arctan2(np.sin(target_angle), np.cos(target_angle))
+        
+        return final_angle, final_speed
 
     def update(self):
         for name, wheel in self.wheels.items():
-            # 1. 悬挂控制
-            if 'rail_id' in wheel:
+            # 悬挂
+            if wheel['rail_id'] != -1:
                 self.data.ctrl[wheel['rail_id']] = self.rail_height
 
-            # 2. 运动学
+            # 运动学解算
             rx, ry = wheel['pos'] 
             wheel_vx = self.vx - (self.w * ROTATION_SPEED) * ry
             wheel_vy = self.vy + (self.w * ROTATION_SPEED) * rx
             
-            target_speed = np.sqrt(wheel_vx**2 + wheel_vy**2)
+            raw_target_speed = np.sqrt(wheel_vx**2 + wheel_vy**2)
             
-            if target_speed < 0.1:
+            # 死区处理：如果摇杆归中，不再旋转轮子，只停止驱动
+            if raw_target_speed < 0.01:
                 self.data.ctrl[wheel['drive_id']] = 0.0
                 continue
 
-            target_angle = np.arctan2(wheel_vy, wheel_vx)
-            final_angle = target_angle + OFFSETS[name]
-            final_angle = (final_angle + np.pi) % (2 * np.pi) - np.pi
+            raw_target_angle = np.arctan2(wheel_vy, wheel_vx) + OFFSETS[name]
+
+            # --- 获取真实角度 ---
+            current_angle = 0.0
+            if wheel['qpos_adr'] is not None:
+                # 核心修正：使用 arctan2(sin, cos) 彻底解决多圈累积问题
+                raw_q = self.data.qpos[wheel['qpos_adr']]
+                current_angle = np.arctan2(np.sin(raw_q), np.cos(raw_q))
             
-            self.data.ctrl[wheel['steer_id']] = final_angle
-            self.data.ctrl[wheel['drive_id']] = target_speed * MAX_SPEED
+            # --- 执行优化逻辑 ---
+            opt_angle, opt_speed = self.optimize_module(current_angle, raw_target_angle, raw_target_speed)
+
+            # 输出控制
+            self.data.ctrl[wheel['steer_id']] = opt_angle
+            self.data.ctrl[wheel['drive_id']] = opt_speed * MAX_SPEED
 
 def main():
     model = mujoco.MjModel.from_xml_path(XML_PATH)
     data = mujoco.MjData(model)
-
     controller = ChassisController(model, data)
 
     with mujoco.viewer.launch_passive(model, data, key_callback=controller.key_callback) as viewer:
         mujoco.mj_resetData(model, data)
-        viewer.opt.frame = mujoco.mjtFrame.mjFRAME_NONE 
-
         while viewer.is_running():
-            step_start = time.time()
             controller.update()
             mujoco.mj_step(model, data)
             viewer.sync()

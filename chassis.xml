@@ -6,7 +6,11 @@
         <geom friction="1.2 0.005 0.0001" condim="3"/>
 
         <default class="rail_ext">
-            <joint damping="20.0" armature="0.1"/>
+            <joint damping="500.0" armature="0.1"
+                range="0.02 0.25"
+                solreflimit="0.01 1"
+                solimplimit="0.95 0.99 0.001"
+            />
         </default>
 
         <default class="wheel_ext">
@@ -36,31 +40,31 @@
             <site name="imu_site" pos="0.0012 -0.3534 0.017" size="0.01" rgba="1 0 0 1"/>
             <inertial pos="0.001206 -0.353411 0.016987" mass="2.804" diaginertia="0.015653 0.013748 0.027267"/>
             
-            <geom type="mesh" rgba="1 1 1 0.2" mesh="base_link" contype="0" conaffinity="0" group="1"/>
+            <geom type="mesh" rgba="0.9 0.9 0.9 1" mesh="base_link" contype="0" conaffinity="0" group="1"/>
 
-            <geom type="box" size="0.02 0.3 0.02" pos="0.3 -0.354 0" rgba="1 0 0 0.6"/>
-            <geom type="box" size="0.02 0.3 0.02" pos="-0.3 -0.354 0" rgba="1 0 0 0.6"/>
-            <geom type="box" size="0.3 0.02 0.02" pos="0 -0.654 0" rgba="1 0 0 0.6"/>
-            <geom type="box" size="0.3 0.02 0.02" pos="0 -0.054 0" rgba="1 0 0 0.6"/>
-            <geom type="box" size="0.42 0.02 0.02" pos="0 -0.354 0" quat="0.9239 0 0 0.3827" rgba="1 0 0 0.6"/>
-            <geom type="box" size="0.42 0.02 0.02" pos="0 -0.354 0" quat="0.9239 0 0 -0.3827" rgba="1 0 0 0.6"/>
+            <geom type="box" size="0.02 0.3 0.02" pos="0.3 -0.354 0" group="3"/>
+            <geom type="box" size="0.02 0.3 0.02" pos="-0.3 -0.354 0" group="3"/>
+            <geom type="box" size="0.3 0.02 0.02" pos="0 -0.654 0" group="3"/>
+            <geom type="box" size="0.3 0.02 0.02" pos="0 -0.054 0" group="3"/>
+            <geom type="box" size="0.42 0.02 0.02" pos="0 -0.354 0" quat="0.9239 0 0 0.3827" group="3"/>
+            <geom type="box" size="0.42 0.02 0.02" pos="0 -0.354 0" quat="0.9239 0 0 -0.3827" group="3"/>
 
             <body name="LF_rail_link" pos="0.30193 -0.654 0.33384" quat="0.707105 0 0 -0.707108">
                 <joint name="LF_rail_joint" class="rail_ext" type="slide" axis="0 0 -1" range="0 0.25"/>
-                <geom type="mesh" rgba="1 1 1 0.2" mesh="LF_rail_link" contype="0" conaffinity="0" group="1"/>
-                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" rgba="0 1 0 0.6"/>
+                <geom type="mesh" rgba="0.65 0.62 0.59 1" mesh="LF_rail_link" contype="0" conaffinity="0" group="1"/>
+                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" group="3"/>
 
                 <body name="LF_yaw_link" pos="0 0 -0.3778">
                     <joint name="LF_yaw_joint" type="hinge" axis="0 0 1" limited="false"/>
-                    <geom type="mesh" rgba="1 1 1 0.2" mesh="LF_yaw_link" contype="0" conaffinity="0" group="1"/>
-                    
-                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" rgba="0 0 1 0.6"/>
+                    <geom type="mesh" mesh="LF_yaw_link" contype="0" conaffinity="0" group="1"/>
+                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" group="3"/>
 
                     <body name="LF_wheel_link" pos="0 0 -0.0465" quat="0.65328 0.653282 -0.270599 -0.270598">
                         <joint name="LF_wheel_joint" class="wheel_ext" type="hinge" axis="0 0 -1" limited="false"/>
-                        <geom size="0.03 0.016" type="cylinder" rgba="0.2 0.2 0.2 1" 
+                        <geom type="cylinder" size="0.03 0.016" rgba="0.2 0.2 0.2 1" group="1" contype="0" conaffinity="0"/>
+                        <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
-                            friction="1.0 0.005 0.0001" 
+                            friction="1.0 0.001 0.0001" 
                             solref="0.02 1" 
                             solimp="0.9 0.95 0.001"
                         />
@@ -70,20 +74,20 @@
 
             <body name="RF_rail_link" pos="-0.29807 -0.654 0.33384" quat="0.707105 0 0 -0.707108">
                 <joint name="RF_rail_joint" class="rail_ext" type="slide" axis="0 0 -1" range="0 0.25"/>
-                <geom type="mesh" rgba="1 1 1 0.2" mesh="RF_rail_link" contype="0" conaffinity="0" group="1"/>
-                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" rgba="0 1 0 0.6"/>
+                <geom type="mesh" mesh="RF_rail_link" contype="0" conaffinity="0" group="1"/>
+                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" group="3"/>
 
                 <body name="RF_yaw_link" pos="0 0 -0.3778">
                     <joint name="RF_yaw_joint" type="hinge" axis="0 0 1" limited="false"/>
-                    <geom type="mesh" rgba="1 1 1 0.2" mesh="RF_yaw_link" contype="0" conaffinity="0" group="1"/>
-                    
-                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" rgba="0 0 1 0.6"/>
+                    <geom type="mesh" mesh="RF_yaw_link" contype="0" conaffinity="0" group="1"/>
+                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" group="3"/>
 
                     <body name="RF_wheel_link" pos="0 0 -0.0465" quat="0.270596 0.270597 -0.653283 -0.653281">
                         <joint name="RF_wheel_joint" class="wheel_ext" type="hinge" axis="0 0 -1" limited="false"/>
-                        <geom size="0.03 0.016" type="cylinder" rgba="0.2 0.2 0.2 1" 
+                        <geom type="cylinder" size="0.03 0.016" rgba="0.2 0.2 0.2 1" group="1" contype="0" conaffinity="0"/>
+                        <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
-                            friction="1.0 0.005 0.0001" 
+                            friction="1.0 0.001 0.0001" 
                             solref="0.02 1" 
                             solimp="0.9 0.95 0.001"
                         />
@@ -93,20 +97,20 @@
 
             <body name="LR_rail_link" pos="0.30193 -0.054 0.33384" quat="0.707105 0 0 -0.707108">
                 <joint name="LR_rail_joint" class="rail_ext" type="slide" axis="0 0 -1" range="0 0.25"/>
-                <geom type="mesh" rgba="1 1 1 0.2" mesh="LR_rail_link" contype="0" conaffinity="0" group="1"/>
-                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" rgba="0 1 0 0.6"/>
+                <geom type="mesh" mesh="LR_rail_link" contype="0" conaffinity="0" group="1"/>
+                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" group="3"/>
 
                 <body name="LR_yaw_link" pos="0 0 -0.3778">
                     <joint name="LR_yaw_joint" type="hinge" axis="0 0 1" limited="false"/>
-                    <geom type="mesh" rgba="1 1 1 0.2" mesh="LR_yaw_link" contype="0" conaffinity="0" group="1"/>
-                    
-                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" rgba="0 0 1 0.6"/>
+                    <geom type="mesh" mesh="LR_yaw_link" contype="0" conaffinity="0" group="1"/>
+                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" group="3"/>
 
                     <body name="LR_wheel_link" pos="0 0 -0.0465" quat="0.65328 0.653282 0.270599 0.270598">
                         <joint name="LR_wheel_joint" class="wheel_ext" type="hinge" axis="0 0 -1" limited="false"/>
-                        <geom size="0.03 0.016" type="cylinder" rgba="0.2 0.2 0.2 1" 
+                        <geom type="cylinder" size="0.03 0.016" rgba="0.2 0.2 0.2 1" group="1" contype="0" conaffinity="0"/>
+                        <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
-                            friction="1.0 0.005 0.0001" 
+                            friction="1.0 0.001 0.0001" 
                             solref="0.02 1" 
                             solimp="0.9 0.95 0.001"
                         />
@@ -116,20 +120,20 @@
 
             <body name="RR_rail_link" pos="-0.29807 -0.054 0.33384" quat="0.707105 0 0 -0.707108">
                 <joint name="RR_rail_joint" class="rail_ext" type="slide" axis="0 0 -1" range="0 0.25"/>
-                <geom type="mesh" rgba="1 1 1 0.2" mesh="RR_rail_link" contype="0" conaffinity="0" group="1"/>
-                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" rgba="0 1 0 0.6"/>
+                <geom type="mesh" mesh="RR_rail_link" contype="0" conaffinity="0" group="1"/>
+                <geom type="box" size="0.015 0.015 0.18" pos="0 0 -0.18" group="3"/>
 
                 <body name="RR_yaw_link" pos="0 0 -0.3778">
                     <joint name="RR_yaw_joint" type="hinge" axis="0 0 1" limited="false"/>
-                    <geom type="mesh" rgba="1 1 1 0.2" mesh="RR_yaw_link" contype="0" conaffinity="0" group="1"/>
-                    
-                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" rgba="0 0 1 0.6"/>
+                    <geom type="mesh" mesh="RR_yaw_link" contype="0" conaffinity="0" group="1"/>
+                    <geom type="cylinder" size="0.03 0.02" pos="0 0 0" group="3"/>
 
                     <body name="RR_wheel_link" pos="0 0 -0.0465" quat="0.270596 0.270597 0.653283 0.653281">
                         <joint name="RR_wheel_joint" class="wheel_ext" type="hinge" axis="0 0 -1" limited="false"/>
-                        <geom size="0.03 0.016" type="cylinder" rgba="0.2 0.2 0.2 1" 
+                        <geom type="cylinder" size="0.03 0.016" rgba="0.2 0.2 0.2 1" group="1" contype="0" conaffinity="0"/>
+                        <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
-                            friction="1.0 0.005 0.0001" 
+                            friction="1.0 0.001 0.0001" 
                             solref="0.02 1" 
                             solimp="0.9 0.95 0.001"
                         />
@@ -158,20 +162,20 @@
     </contact>
 
     <actuator>
-        <position name="LF_steer" joint="LF_yaw_joint" kp="500" forcerange="-10.0 10.0" ctrlrange="-3.1416 3.1416"/>
-        <position name="RF_steer" joint="RF_yaw_joint" kp="500" forcerange="-10.0 10.0" ctrlrange="-3.1416 3.1416"/>
-        <position name="LR_steer" joint="LR_yaw_joint" kp="500" forcerange="-10.0 10.0" ctrlrange="-3.1416 3.1416"/>
-        <position name="RR_steer" joint="RR_yaw_joint" kp="500" forcerange="-10.0 10.0" ctrlrange="-3.1416 3.1416"/>
+        <position name="LF_steer" joint="LF_yaw_joint" kp="600" forcerange="-2.0 2.0"/>
+        <position name="RF_steer" joint="RF_yaw_joint" kp="600" forcerange="-2.0 2.0"/>
+        <position name="LR_steer" joint="LR_yaw_joint" kp="600" forcerange="-2.0 2.0"/>
+        <position name="RR_steer" joint="RR_yaw_joint" kp="600" forcerange="-2.0 2.0"/>
 
-        <velocity name="LF_drive" joint="LF_wheel_joint" kv="20" forcerange="-50.0 50.0" ctrlrange="-100 100"/>
-        <velocity name="RF_drive" joint="RF_wheel_joint" kv="20" forcerange="-50.0 50.0" ctrlrange="-100 100"/>
-        <velocity name="LR_drive" joint="LR_wheel_joint" kv="20" forcerange="-50.0 50.0" ctrlrange="-100 100"/>
-        <velocity name="RR_drive" joint="RR_wheel_joint" kv="20" forcerange="-50.0 50.0" ctrlrange="-100 100"/>
+        <velocity name="LF_drive" joint="LF_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
+        <velocity name="RF_drive" joint="RF_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
+        <velocity name="LR_drive" joint="LR_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
+        <velocity name="RR_drive" joint="RR_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
 
-        <position name="LF_rail" joint="LF_rail_joint" kp="1000" forcerange="-500 500" ctrlrange="0 0.25"/>
-        <position name="RF_rail" joint="RF_rail_joint" kp="1000" forcerange="-500 500" ctrlrange="0 0.25"/>
-        <position name="LR_rail" joint="LR_rail_joint" kp="1000" forcerange="-500 500" ctrlrange="0 0.25"/>
-        <position name="RR_rail" joint="RR_rail_joint" kp="1000" forcerange="-500 500" ctrlrange="0 0.25"/>
+        <position name="LF_rail" joint="LF_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
+        <position name="RF_rail" joint="RF_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
+        <position name="LR_rail" joint="LR_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
+        <position name="RR_rail" joint="RR_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
     </actuator>
 
     <sensor>
