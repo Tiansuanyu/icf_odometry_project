@@ -43,6 +43,7 @@ class ChassisController:
         
         # 初始化查找 ID 和 Address
         for name in ['LF', 'RF', 'LR', 'RR']:
+            # 这些是 XML 里的 Actuator 名字
             steer_act_name = f"{name}_steer"
             drive_act_name = f"{name}_drive"
             rail_act_name  = f"{name}_rail"
@@ -53,17 +54,17 @@ class ChassisController:
             rail_id  = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, rail_act_name)
 
             # 2. 查找 Joint Address (用于读真实角度)
-            # 警告：这里假设你的 Joint 名字和 Actuator 名字一样。如果不动，请检查 XML joint name
-            joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, steer_act_name)
+            target_joint_name = f"{name}_yaw_joint"
+            joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, target_joint_name)
+            
             if joint_id != -1:
                 qpos_adr = model.jnt_qposadr[joint_id]
             else:
-                # 尝试加 "_joint" 后缀再次查找 (常见的 XML 命名习惯)
-                joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, f"{name}_steer_joint")
-                qpos_adr = model.jnt_qposadr[joint_id] if joint_id != -1 else None
+                qpos_adr = None
             
             if qpos_adr is None:
-                print(f"[严重警告] 找不到 {name} 的转向关节，无法读取角度，优化逻辑将失效！")
+                # 打印出它试图寻找的名字，方便调试
+                print(f"[严重警告] XML中找不到关节: '{target_joint_name}'。无法读取角度，优化逻辑将失效！")
 
             self.actuators[f"{name}_data"] = {
                 'steer_id': steer_id,
@@ -72,7 +73,7 @@ class ChassisController:
                 'qpos_adr': qpos_adr
             }
 
-        # 组装逻辑轮子
+        # 组装逻辑轮子 (保持不变)
         for logic_name, xml_prefix in WHEEL_MAP_CONFIG.items():
             comp_data = self.actuators[f"{xml_prefix}_data"]
             self.wheels[logic_name] = {
@@ -111,9 +112,7 @@ class ChassisController:
             self.w = 1.0   
 
         # --- 悬挂/其他功能 ---
-        elif keycode == 32: # Space (急停/刹车)
-            # 因为前面已经归零了，这里其实什么都不用做，
-            # 或者你可以专门留着作为逻辑占位
+        elif keycode == 32: 
             pass 
             
         elif keycode == 93: # ]
@@ -145,10 +144,6 @@ class ChassisController:
 
         # 3. 策略B：余弦缩放 (Cosine Scaling)
         # 误差越大，速度越慢；误差90度时速度为0。
-        # 这样既保证了不拖拽，又保证了只要有趋势就会动，不会死锁。
-        # 我们用 abs(cos) 是因为前面已经处理了反向问题，这里的 cos 符号主要表示“对齐程度”
-        # 实际上因为 abs(error) < 90度，cos(error) 恒为正。
-        
         scale_factor = np.cos(error)
         
         # 如果你希望容忍度高一点，不想让速度降得太厉害，可以用 power 调整，例如：

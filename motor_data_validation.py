@@ -9,9 +9,6 @@ XML_PATH = "scene.xml"  # 你的XML文件路径
 WHEEL_RADIUS = 0.03     # 你的椭球体半径 (必须准确)
 SIM_DURATION = 5.0      # 总仿真时间
 
-# ================= 你的控制器代码 (保持原样) =================
-# ... (为了保证运行，我把你的类完整搬过来了) ...
-
 MAX_SPEED = 50.0       
 ROTATION_SPEED = 3.0   
 RAIL_MIN = 0.00

@@ -6,7 +6,7 @@
         <geom friction="1.2 0.005 0.0001" condim="3"/>
 
         <default class="rail_ext">
-            <joint damping="500.0" armature="0.1"
+            <joint damping="100.0" armature="0.1"
                 range="0.02 0.25"
                 solreflimit="0.01 1"
                 solimplimit="0.95 0.99 0.001"
@@ -35,7 +35,7 @@
     </asset>
 
     <worldbody>
-        <body name="base_link" pos="0 0 0.5">
+        <body name="base_link" pos="0 0 0.12">
             <freejoint name="floating_base"/> 
             <site name="imu_site" pos="0.0012 -0.3534 0.017" size="0.01" rgba="1 0 0 1"/>
             <inertial pos="0.001206 -0.353411 0.016987" mass="2.804" diaginertia="0.015653 0.013748 0.027267"/>
@@ -65,8 +65,8 @@
                         <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
                             friction="1.0 0.001 0.0001" 
-                            solref="0.02 1" 
-                            solimp="0.9 0.95 0.001"
+                            solref="0.05 1" 
+                            solimp="0.001 0.99 0.01"
                         />
                     </body>
                 </body>
@@ -88,8 +88,8 @@
                         <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
                             friction="1.0 0.001 0.0001" 
-                            solref="0.02 1" 
-                            solimp="0.9 0.95 0.001"
+                            solref="0.05 1" 
+                            solimp="0.001 0.99 0.01"
                         />
                     </body>
                 </body>
@@ -111,8 +111,8 @@
                         <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
                             friction="1.0 0.001 0.0001" 
-                            solref="0.02 1" 
-                            solimp="0.9 0.95 0.001"
+                            solref="0.05 1" 
+                            solimp="0.001 0.99 0.01"
                         />
                     </body>
                 </body>
@@ -134,8 +134,8 @@
                         <geom type="ellipsoid" size="0.03 0.03 0.016" group="3"
                             condim="3" 
                             friction="1.0 0.001 0.0001" 
-                            solref="0.02 1" 
-                            solimp="0.9 0.95 0.001"
+                            solref="0.05 1" 
+                            solimp="0.001 0.99 0.01"
                         />
                     </body>
                 </body>
@@ -172,10 +172,10 @@
         <velocity name="LR_drive" joint="LR_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
         <velocity name="RR_drive" joint="RR_wheel_joint" kv="10" forcerange="-3.0 3.0" ctrlrange="-50 50"/>
 
-        <position name="LF_rail" joint="LF_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
-        <position name="RF_rail" joint="RF_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
-        <position name="LR_rail" joint="LR_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
-        <position name="RR_rail" joint="RR_rail_joint" kp="4000" forcerange="-1000 1000" ctrlrange="0 0.25"/>
+        <position name="LF_rail" joint="LF_rail_joint" kp="500" forcerange="-2000 2000" ctrlrange="0 0.25"/>
+        <position name="RF_rail" joint="RF_rail_joint" kp="500" forcerange="-2000 2000" ctrlrange="0 0.25"/>
+        <position name="LR_rail" joint="LR_rail_joint" kp="500" forcerange="-2000 2000" ctrlrange="0 0.25"/>
+        <position name="RR_rail" joint="RR_rail_joint" kp="500" forcerange="-2000 2000" ctrlrange="0 0.25"/>
     </actuator>
 
     <sensor>

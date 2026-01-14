@@ -4,7 +4,8 @@
             solver="Newton" 
             iterations="50" 
             tolerance="1e-10" 
-            gravity="0 0 -9.81"/>
+            gravity="0 0 -9.81"
+            impratio="10"/>
 
     <asset>
         <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="512" height="512"/>
